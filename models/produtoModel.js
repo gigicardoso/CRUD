@@ -1,61 +1,89 @@
-const db = require('../config/db');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
 
-const Produto = {
-    create: (produto, callback) => {
-        const query = 'INSERT INTO produtos (nome, descricao, preco, quantidade, categoria) VALUES (?, ?, ?, ?, ?)';
-        db.query(query, [produto.nome, produto.descricao, produto.preco, produto.quantidade, produto.categoria], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results.insertId);
-        });
-    },
+const Produto = sequelize.define('Produto', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  nome: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  descricao: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  preco: {
+    type: DataTypes.FLOAT,
+    allowNull: false
+  },
+  quantidade: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  categoria: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  }
+}, {
+  tableName: 'produtos',
+  timestamps: false
+});
 
-    findById: (id, callback) => {
-        const query = 'SELECT produtos.*, categorias.nome AS categoria_nome FROM produtos JOIN categorias ON produtos.categoria = categorias.id WHERE produtos.id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
+Produto.createProduto = async (produto) => {
+  const novoProduto = await Produto.create({
+    nome: produto.nome,
+    descricao: produto.descricao,
+    preco: produto.preco,
+    quantidade: produto.quantidade,
+    categoria: produto.categoria
+  });
+  return novoProduto.id;
+};
 
-    update: (id, produto, callback) => {
-        const query = 'UPDATE produtos SET nome = ?, preco = ?, descricao = ?, quantidade = ?, categoria = ? WHERE id = ?';
-        db.query(query, [produto.nome, produto.preco, produto.descricao, produto.quantidade, produto.categoria, id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
+Produto.findById = async (id) => {
+  return await Produto.findByPk(id, {
+    include: [
+      {
+        model: require('./categoriaModel'),
+        as: 'categoriaInfo',
+        attributes: ['nome']
+      }
+    ]
+  });
+};
 
-    delete: (id, callback) => {
-        const query = 'DELETE FROM produtos WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
+Produto.updateProduto = async (id, produto) => {
+  return await Produto.update(
+    {
+      nome: produto.nome,
+      preco: produto.preco,
+      descricao: produto.descricao,
+      quantidade: produto.quantidade,
+      categoria: produto.categoria
     },
+    { where: { id } }
+  );
+};
 
-    getAll: (categoria, callback) => {
-        let query = 'SELECT produtos.id, produtos.nome, produtos.descricao, produtos.preco, produtos.quantidade, categorias.nome AS categoria_nome FROM produtos JOIN categorias ON produtos.categoria = categorias.id';
-        
-        if (categoria) {
-            query += ' WHERE produtos.categoria = ?';
-        }
-    
-        db.query(query, [categoria], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-    
+Produto.deleteProduto = async (id) => {
+  return await Produto.destroy({ where: { id } });
+};
+
+Produto.getAll = async (categoria) => {
+  const where = categoria ? { categoria } : {};
+  return await Produto.findAll({
+    where,
+    include: [
+      {
+        model: require('./categoriaModel'),
+        as: 'categoriaInfo',
+        attributes: ['nome']
+      }
+    ]
+  });
 };
 
 module.exports = Produto;

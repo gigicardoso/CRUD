@@ -1,66 +1,48 @@
-const db = require('../config/db');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
 
-const Categoria = {
-    create: (categoria, callback) => {
-        const query = 'INSERT INTO categorias (nome) VALUES (?)';
-        db.query(query, [categoria.nome], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results.insertId);
-        });
-    },
+const Categoria = sequelize.define('Categoria', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  nome: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, {
+  tableName: 'categorias',
+  timestamps: false
+});
 
-    findById: (id, callback) => {
-        const query = 'SELECT * FROM categorias WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
-
-    findByCategorianame: (nome, callback) => {
-        const query = 'SELECT * FROM categorias WHERE nome = ?';
-        db.query(query, [nome], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
-
-    update: (id, categoria, callback) => {
-        const query = 'UPDATE categorias SET nome = ? WHERE id = ?';
-        db.query(query, [categoria.nome,id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    delete: (id, callback) => {
-        const query = 'DELETE FROM categorias WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    getAll: (callback) => {
-        const query = 'SELECT * FROM categorias';
-        db.query(query, (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
+// Métodos utilitários
+Categoria.createCategoria = async (categoria) => {
+  const novaCategoria = await Categoria.create({ nome: categoria.nome });
+  return novaCategoria.id;
 };
 
+Categoria.findById = async (id) => {
+  return await Categoria.findByPk(id);
+};
+
+Categoria.findByCategorianame = async (nome) => {
+  return await Categoria.findOne({ where: { nome } });
+};
+
+Categoria.updateCategoria = async (id, categoria) => {
+  return await Categoria.update(
+    { nome: categoria.nome },
+    { where: { id } }
+  );
+};
+
+Categoria.deleteCategoria = async (id) => {
+  return await Categoria.destroy({ where: { id } });
+};
+
+Categoria.getAll = async () => {
+  return await Categoria.findAll();
+};
 
 module.exports = Categoria;

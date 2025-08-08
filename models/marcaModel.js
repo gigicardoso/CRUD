@@ -1,66 +1,47 @@
-const db = require('../config/db');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
 
-const Marca = {
-    create: (marca, callback) => {
-        const query = 'INSERT INTO marca (nome) VALUES (?)';
-        db.query(query, [marca.nome], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results.insertId);
-        });
-    },
+const Marca = sequelize.define('Marca', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  nome: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, {
+  tableName: 'marca',
+  timestamps: false
+});
 
-    findById: (id, callback) => {
-        const query = 'SELECT * FROM marca WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
-
-    findByMarcaname: (nome, callback) => {
-        const query = 'SELECT * FROM marca WHERE nome = ?';
-        db.query(query, [nome], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
-
-    update: (id, marca, callback) => {
-        const query = 'UPDATE marca SET nome = ? WHERE id = ?';
-        db.query(query, [marca.nome,id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    delete: (id, callback) => {
-        const query = 'DELETE FROM marca WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    getAll: (callback) => {
-        const query = 'SELECT * FROM marca';
-        db.query(query, (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
+Marca.createMarca = async (marca) => {
+  const novaMarca = await Marca.create({ nome: marca.nome });
+  return novaMarca.id;
 };
 
+Marca.findById = async (id) => {
+  return await Marca.findByPk(id);
+};
+
+Marca.findByMarcaname = async (nome) => {
+  return await Marca.findOne({ where: { nome } });
+};
+
+Marca.updateMarca = async (id, marca) => {
+  return await Marca.update(
+    { nome: marca.nome },
+    { where: { id } }
+  );
+};
+
+Marca.deleteMarca = async (id) => {
+  return await Marca.destroy({ where: { id } });
+};
+
+Marca.getAll = async () => {
+  return await Marca.findAll();
+};
 
 module.exports = Marca;

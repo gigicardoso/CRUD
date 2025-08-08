@@ -1,75 +1,73 @@
-const db = require('../config/db');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
 
-const Usuario = {
-    create: (usuario, callback) => {
-        const query = 'INSERT INTO usuarios (usuarioname, password, role) VALUES (?, ?, ?)';
-        db.query(query, [usuario.usuarioname, usuario.password, usuario.role], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results.insertId);
-        });
+const Usuario = sequelize.define('Usuario', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  usuarioname: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false
+  }
+}, {
+  tableName: 'usuarios',
+  timestamps: false
+});
+
+Usuario.createUsuario = async (usuario) => {
+  const novoUsuario = await Usuario.create({
+    usuarioname: usuario.usuarioname,
+    password: usuario.password,
+    role: usuario.role
+  });
+  return novoUsuario.id;
+};
+
+Usuario.findById = async (id) => {
+  return await Usuario.findByPk(id);
+};
+
+Usuario.findByUsuarioname = async (usuarioname) => {
+  return await Usuario.findOne({ where: { usuarioname } });
+};
+
+Usuario.updateUsuario = async (id, usuario) => {
+  return await Usuario.update(
+    {
+      usuarioname: usuario.usuarioname,
+      password: usuario.password,
+      role: usuario.role
     },
+    { where: { id } }
+  );
+};
 
-    findById: (id, callback) => {
-        const query = 'SELECT * FROM usuarios WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
+Usuario.deleteUsuario = async (id) => {
+  return await Usuario.destroy({ where: { id } });
+};
 
-    findByUsuarioname: (usuarioname, callback) => {
-        const query = 'SELECT * FROM usuarios WHERE usuarioname = ?';
-        db.query(query, [usuarioname], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results[0]);
-        });
-    },
+Usuario.getAll = async () => {
+  return await Usuario.findAll();
+};
 
-    update: (id, usuario, callback) => {
-        const query = 'UPDATE usuarios SET usuarioname = ?, password = ?, role = ? WHERE id = ?';
-        db.query(query, [usuario.usuarioname, usuario.password, usuario.role, id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    delete: (id, callback) => {
-        const query = 'DELETE FROM usuarios WHERE id = ?';
-        db.query(query, [id], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    getAll: (callback) => {
-        const query = 'SELECT * FROM usuarios';
-        db.query(query, (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },
-
-    searchByName: (name, callback) => {
-        const query = 'SELECT * FROM usuarios WHERE usuarioname LIKE ?';
-        db.query(query, [`%${name}%`], (err, results) => {
-            if (err) {
-                return callback(err);
-            }
-            callback(null, results);
-        });
-    },    
+Usuario.searchByName = async (name) => {
+  return await Usuario.findAll({
+    where: {
+      usuarioname: {
+        [require('sequelize').Op.like]: `%${name}%`
+      }
+    }
+  });
 };
 
 module.exports = Usuario;
