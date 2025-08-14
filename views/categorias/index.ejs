@@ -7,17 +7,10 @@
         </tr>
     </thead>
     <tbody>
-        <% categoria.forEach(categoria => { %>
+        <% categorias.forEach(categoria => { %>
             <tr>
                 <td><%= categoria.id %></td>
                 <td><%= categoria.nome %></td>
-                <td>
-                    <a href="/categoria/<%= categoria.id %>" class="btn btn-primary">View</a>
-                    <a href="/categoria/<%= categoria.id %>/edit" class="btn btn-warning">Edit</a>
-                    <form action="/categoria/<%= categoria.id %>?_method=DELETE" method="POST" style="display: inline;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </td>
             </tr>
         <% }) %>
     </tbody>

@@ -1,83 +1,71 @@
-const Marca = require('../models/marcaModel');
+const { Marca } = require('../models');
 
 const marcaController = {
-    createMarca: (req, res) => {
-        const newMarca = {
-            nome: req.body.nome
-        };
-
-        Marca.create(newMarca, (err, MarcaId) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+    createMarca: async (req, res) => {
+        try {
+            await Marca.create({ nome: req.body.nome });
             res.redirect('/marca');
-        });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     },
 
-    getMarcaById: (req, res) => {
-        const marcaId = req.params.id;
-
-        Marca.findById(marcaId, (err, marca) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+    getMarcaById: async (req, res) => {
+        try {
+            const marca = await Marca.findByPk(req.params.id);
             if (!marca) {
                 return res.status(404).json({ message: 'Marca not found' });
             }
             res.render('marca/show', { marca });
-        });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     },
 
-    getAllMarca: (req, res) => {
-        Marca.getAll((err, marca) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+    getAllMarca: async (req, res) => {
+        try {
+            const marca = await Marca.findAll();
             res.render('marca/index', { marca });
-        });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     },
 
     renderCreateForm: (req, res) => {
         res.render('marca/create');
     },
 
-    renderEditForm: (req, res) => {
-        const marcaId = req.params.id;
-
-        Marca.findById(marcaId, (err, marca) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+    renderEditForm: async (req, res) => {
+        try {
+            const marca = await Marca.findByPk(req.params.id);
             if (!marca) {
                 return res.status(404).json({ message: 'Marca not found' });
             }
             res.render('marca/edit', { marca });
-        });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     },
 
-    updateMarca: (req, res) => {
-        const marcaId = req.params.id;
-        const updatedMarca = {
-            nome: req.body.nome
-        };
-
-        Marca.update(marcaId, updatedMarca, (err) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+    updateMarca: async (req, res) => {
+        try {
+            await Marca.update(
+                { nome: req.body.nome },
+                { where: { id: req.params.id } }
+            );
             res.redirect('/marca');
-        });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     },
 
-    deleteMarca: (req, res) => {
-        const marcaId = req.params.id;
-
-        Marca.delete(marcaId, (err) => {
-            if (err) {
-                return res.status(500).json({ error: err });
-            }
+    deleteMarca: async (req, res) => {
+        try {
+            await Marca.destroy({ where: { id: req.params.id } });
             res.redirect('/marca');
-        });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
     }
 };
 
